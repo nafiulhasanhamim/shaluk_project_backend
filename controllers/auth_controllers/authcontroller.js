@@ -53,8 +53,13 @@ const registerUser = async (req,res) => {
 const loginUser = async (req,res) => {
     const {email,password} = req.body;
     const user = await pool.query("SELECT * FROM users WHERE email=$1",[email]);
-  
-    if (!bcrypt.compareSync(password, user.rows[0].password)) {
+    if (user.rowCount===0 | user?.rows[0]?.status === "pending") {
+      return res.status(201).send({
+        success: false,
+        message: "User is not found",
+      });
+    }
+    if (!bcrypt.compareSync(password, user.rows[0]?.password)) {
       return res.status(201).send({
         success: false,
         message: "Incorrect password",

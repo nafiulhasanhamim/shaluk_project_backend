@@ -7,6 +7,91 @@ const {v4 : uuidv4} = require("uuid");
 
 const saltRounds = 10;
 
+//user profile
+const userProfile = async (req,res) => {
+  const {user_id} = req.body;
+  const details = await pool.query(`
+   SELECT * FROM users WHERE user_id=$1
+  `,[user_id])
+  .then((profile)=> {
+      res.send({
+          success: true,
+          message: "Successfully fetched all orders",
+          user : profile.rows
+        });
+  })
+  .catch((error) => {
+      res.send({
+        success: false,
+        message: "Something went wrong!!",
+        error: error,
+      });
+    });
+}
+
+//update user profile
+const updateUserProfile = async ( req,res) => {
+  const {user_id,name,address,phone_number} = req.body;
+  const status = await pool.query(`
+  UPDATE users SET name=$1, address=$2, phone_number=$3 WHERE user_id=$4
+    `,[name,address,phone_number,user_id])
+    .then((status)=> {
+        res.send({
+            success: true,
+            message: "Successfully updated user profile",
+          });
+    })
+    .catch((error) => {
+        res.send({
+          success: false,
+          message: "Something went wrong!!",
+          error: error,
+        });
+      });
+
+}
+
+//all food shops
+const allFoodShops = async (req,res) => {
+  const products = await pool.query(`
+   SELECT * FROM shops WHERE shop_type='Food'
+  `)
+  .then((shops)=> {
+      res.send({
+          success: true,
+          message: "Successfully fetched all orders",
+          shops : shops.rows
+        });
+  })
+  .catch((error) => {
+      res.send({
+        success: false,
+        message: "Something went wrong!!",
+        error: error,
+      });
+    });
+}
+
+//all medicine shops
+const allMedicineShops = async (req,res) => {
+  const products = await pool.query(`
+   SELECT * FROM shops WHERE shop_type='Medicine'
+  `)
+  .then((shops)=> {
+      res.send({
+          success: true,
+          message: "Successfully fetched all orders",
+          shops : shops.rows
+        });
+  })
+  .catch((error) => {
+      res.send({
+        success: false,
+        message: "Something went wrong!!",
+        error: error,
+      });
+    });
+}
 //getAllProducts
 const getAllProducts = async (req,res) => {
     const products = await pool.query(`
@@ -42,7 +127,7 @@ const specificShopProducts = async (req,res) => {
   .then((products)=> {
       res.send({
           success: true,
-          message: "Successfully fetched all products",
+          message: "Successfully fetched user details",
           products : products.rows
         });
   })
@@ -85,12 +170,12 @@ const medicineProducts = async (req,res) => {
     SELECT  product_id,product_name,product_description,product_image,product_price,pro.shop_id,
     sh.shop_name,sh.shop_type,sh.shop_address
     FROM products as pro JOIN shops as sh ON pro.shop_id=sh.shop_id WHERE sh.shop_type=$1 
-    `,["medicine"])
+    `,["Medicine"])
     .then((product)=> {
         res.send({
             success: true,
             message: "Successfully fetched medicine product",
-            product : product.rows
+            products : product.rows
           });
     })
     .catch((error) => {
@@ -108,12 +193,12 @@ const foodProducts = async (req,res) => {
     SELECT  product_id,product_name,product_description,product_image,product_price,pro.shop_id,sh.shop_name,sh.shop_type,
     sh.shop_address
     FROM products as pro JOIN shops as sh ON pro.shop_id=sh.shop_id WHERE sh.shop_type=$1 
-    `,["food"])
+    `,["Food"])
     .then((product)=> {
         res.send({
             success: true,
             message: "Successfully fetched food product",
-            product : product.rows
+            products : product.rows
           });
     })
     .catch((error) => {
@@ -175,5 +260,5 @@ const orderByAParticularCustomer = async (req,res) => {
 }
 
 
-module.exports = {getAllProducts,individualProduct,medicineProducts,foodProducts,specificShopProducts,
-  orderByAParticularCustomer,placeOrder}
+module.exports = {allMedicineShops,allFoodShops,getAllProducts,individualProduct,medicineProducts,foodProducts,specificShopProducts,
+  orderByAParticularCustomer,placeOrder,userProfile,updateUserProfile}

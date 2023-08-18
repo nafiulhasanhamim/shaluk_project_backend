@@ -10,7 +10,7 @@ const saltRounds = 10;
 
 const registerUser = async (req,res) => {
     try {
-        const {email,password,phone_number,name,address,user_image} = req.body;
+        const {email,password,phone_number,name,role,address,user_image} = req.body;
         const user = await pool.query("SELECT * FROM users WHERE email=$1",[email]);
         if (user.rowCount===1) {
           return res.status(201).send({
@@ -21,10 +21,15 @@ const registerUser = async (req,res) => {
           
            const user_id = uuidv4();
            let access,status;
+           if(role==="customer") {
+            access = "customer"
+           } else {
+            access = "admin"
+           }
           const create_user = await pool.query(`INSERT into users 
-          (user_id,email,password,role,phone_number,name,address,user_image) 
-          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-          [user_id,email,hash,"customer",phone_number,name,address,user_image])
+          (user_id,email,password,role,phone_number,name,address) 
+          VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+          [user_id,email,hash,access,phone_number,name,address])
             .then((user) => {
               res.send({
                 success: true,
@@ -53,11 +58,11 @@ const registerUser = async (req,res) => {
 const loginUser = async (req,res) => {
     const {email,password} = req.body;
     const user = await pool.query("SELECT * FROM users WHERE email=$1",[email]);
-    if (user.rowCount===0 | user?.rows[0]?.status === "pending") {
+    if(user.rowCount===0) {
       return res.status(201).send({
-        success: false,
-        message: "User is not found",
-      });
+        success : false,
+        message : "User is not found"
+      })
     }
     if (!bcrypt.compareSync(password, user.rows[0]?.password)) {
       return res.status(201).send({
@@ -75,6 +80,7 @@ const loginUser = async (req,res) => {
     const token = jwt.sign(payload, process.env.SECRET_KEY, {
       expiresIn: "2d",
     });
+  
   
       return res.status(200).send({
         success: true,
@@ -106,7 +112,7 @@ const isAdmin = (req,resp,next) => {
               next();
            } else {
                 resp.send({
-                  message : "admin not verified"
+                  message : "admin is not verified"
                 })
            }
       }
@@ -134,7 +140,7 @@ const isCustomer = (req,resp,next) => {
                 next();
              } else {
                   resp.send({
-                    message : "admin not verified"
+                    message : "customer is not verified"
                   })
              }
         }

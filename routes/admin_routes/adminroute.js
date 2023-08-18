@@ -4,7 +4,7 @@ require("dotenv").config();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const passport = require("passport");
-const { getAllOrders, addProduct, allShops, changeOrderStatus, addShop } = require("../../controllers/admin_controllers/admincontroller");
+const { getAllOrders, addProduct, allShops, changeOrderStatus, addShop, deletetProducts } = require("../../controllers/admin_controllers/admincontroller");
 const { isAdmin } = require("../../controllers/auth_controllers/authcontroller");
   
 adminrouter.use(passport.initialize());
@@ -12,7 +12,9 @@ adminrouter.use(passport.initialize());
 adminrouter.get("/get-all-orders",isAdmin,getAllOrders);
 adminrouter.post("/add-product",isAdmin,addProduct);
 adminrouter.get("/all-shops",allShops);
-adminrouter.post("/add-shop",addShop)
+adminrouter.post("/add-shop",isAdmin, addShop);
+// adminrouter.get("/delete-shops",deletetShops);
+adminrouter.get("/delete-products",deletetProducts);
 //place order
 adminrouter.put("/change-order-status",isAdmin,changeOrderStatus);
 
